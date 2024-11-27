@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Processing</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        textarea {
+            width: 100%;
+            height: 200px;
+        }
+        button {
+            padding: 10px 15px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Paste Your Raw Data</h1>
+    <textarea id="rawData" placeholder="Paste your data here..."></textarea>
+    <br><br>
+    <button onclick="processData()">Process Data</button>
+
+    <h2>Processed Data</h2>
+    <table id="outputTable" style="display:none;">
+        <thead>
+            <tr>
+                <th>Start Date</th>
+                <th>End Date</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <script>
+        function processData() {
+            // Get the raw data from the textarea
+            const rawData = document.getElementById("rawData").value.trim();
+            
+            // Split the raw data into lines (assuming each entry is on a new line)
+            const rows = rawData.split("\n");
+            
+            // Prepare output container and show the table
+            const outputTable = document.getElementById("outputTable");
+            const tbody = outputTable.querySelector("tbody");
+            tbody.innerHTML = ""; // Clear previous output
+            outputTable.style.display = "table"; // Show the table
+
+            // Loop through each row of data
+            rows.forEach(rowData => {
+                // Skip empty lines
+                if (rowData.trim() === "") return;
+
+                try {
+                    // Extract and format the start date
+                    const startDateStr = rowData.split(" (")[0].trim();
+                    const startDate = new Date(startDateStr);
+                    const startDateFormatted = formatDate(startDate);
+
+                    // Initialize end date as blank
+                    let endDateFormatted = "";
+
+                    // Extract the previous month abbreviation, if available
+                    const prevMonthMatch = rowData.match(/\((\w+)\)/);
+                    if (prevMonthMatch) {
+                        const prevMonthStr = prevMonthMatch[1].trim();
+                        const endDate = getEndDate(startDate, prevMonthStr);
+                        endDateFormatted = formatDate(endDate);
+                    }
+
+                    // Create new row in the output table
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `<td>${startDateFormatted}</td><td>${endDateFormatted}</td>`;
+                    tbody.appendChild(tr);
+                } catch (e) {
+                    console.error("Error processing row:", rowData, e);
+                }
+            });
+        }
+
+        // Function to format a Date object as dd-mm-yyyy
+        function formatDate(date) {
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}-${month}-${year}`;
+        }
+
+        // Function to calculate the last day of the previous month
+        function getEndDate(startDate, prevMonthStr) {
+            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            const month = monthNames.indexOf(prevMonthStr);
+            if (month === -1) throw new Error("Invalid month abbreviation");
+
+            let year = startDate.getFullYear();
+            if (month === 0 && startDate.getMonth() === 0) {
+                year -= 1; // Handle transition from January to December
+            }
+
+            const lastDay = new Date(year, month + 1, 0); // Get last day of previous month
+            return lastDay;
+        }
+    </script>
+
+</body>
+</html>
