@@ -38,8 +38,8 @@
     <table id="outputTable" style="display:none;">
         <thead>
             <tr>
-                <th>Start Date</th>
-                <th>End Date</th>
+                <th>Date1</th>
+                <th>Date2</th>
             </tr>
         </thead>
         <tbody></tbody>
@@ -108,6 +108,11 @@
             let year = startDate.getFullYear();
             if (month === 0 && startDate.getMonth() === 0) {
                 year -= 1; // Handle transition from January to December
+            }
+
+            // If the previous month is December, the end date should be in the previous year
+            if (prevMonthStr === "Dec" && startDate.getMonth() === 0) {
+                year -= 1;
             }
 
             const lastDay = new Date(year, month + 1, 0); // Get last day of previous month
